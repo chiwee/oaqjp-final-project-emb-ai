@@ -5,7 +5,7 @@ import json
 app = Flask(__name__)
 
 # ====== IBM Watson NLU Credentials ======
-API_KEY = "YOUR_IBM_WATSON_API_KEY"
+API_KEY = "Y6rJkSTpc4uQuAjxat5oE-Pn2JOtzwZItZFqZgHDPmdX"
 URL = "YOUR_IBM_WATSON_URL"  # e.g. https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/xxx
 
 def get_emotion(text):
