@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 # ====== IBM Watson NLU Credentials ======
 API_KEY = "Y6rJkSTpc4uQuAjxat5oE-Pn2JOtzwZItZFqZgHDPmdX"
-URL = "YOUR_IBM_WATSON_URL"  # e.g. https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/xxx
+URL = "https://api.au-syd.natural-language-understanding.watson.cloud.ibm.com/instances/967245b1-1bca-486d-98ad-8731701d954a"  # e.g. https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/xxx
 
 def get_emotion(text):
     endpoint = f"{URL}/v1/analyze?version=2022-04-07"
