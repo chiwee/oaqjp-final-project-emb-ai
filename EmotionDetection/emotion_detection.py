@@ -4,80 +4,58 @@ API_KEY = "xxx"
 URL = "xxx"
 
 
-def emotion_detector(text):
-    """
-    Calls IBM Watson NLU and returns emotion scores.
-    Includes error handling for status code 400 and API failures.
-    """
+def emotion_detector(text_to_analyse):
 
-    # -------------------------
-    # Input validation (Task 7A)
-    # -------------------------
-    if text is None or text.strip() == "":
+    # Handle empty input
+    if text_to_analyse is None or text_to_analyse.strip() == "":
         return {
             "anger": None,
             "disgust": None,
             "fear": None,
             "joy": None,
             "sadness": None,
-            "error": "400 - Invalid input text"
+            "dominant_emotion": None
         }
 
-    endpoint = f"{URL}/v1/analyze?version=2022-04-07"
+    # Correct Watson NLP endpoint (REQUIRED by Coursera)
+    url = "https://sn-watson-emotion.labs.skills.network/v1/watson.runtime.nlp.v1/NlpService/EmotionPredict"
 
+    # Required header (STRICT MATCH)
+    headers = {
+        "Content-Type": "application/json",
+        "grpc-metadata-mm-model-id": "emotion_aggregated-workflow_lang_en_stock"
+    }
+
+    # Required payload format
     payload = {
-        "text": text,
-        "features": {
-            "emotion": {}
+        "raw_document": {
+            "text": text_to_analyse
         }
     }
 
-    try:
-        response = requests.post(
-            endpoint,
-            auth=("apikey", API_KEY),
-            headers={"Content-Type": "application/json"},
-            json=payload,
-            timeout=10
-        )
+    # POST request
+    response = requests.post(url, json=payload, headers=headers)
 
-        # -------------------------
-        # Handle HTTP errors
-        # -------------------------
-        if response.status_code != 200:
-            return {
-                "anger": None,
-                "disgust": None,
-                "fear": None,
-                "joy": None,
-                "sadness": None,
-                "error": f"HTTP {response.status_code}",
-                "details": response.text
-            }
-
-        data = response.json()
-
-        emotions = data.get("emotion", {}).get("document", {}).get("emotion", {})
-
+    # Handle bad request
+    if response.status_code == 400:
         return {
-            "anger": emotions.get("anger", 0),
-            "disgust": emotions.get("disgust", 0),
-            "fear": emotions.get("fear", 0),
-            "joy": emotions.get("joy", 0),
-            "sadness": emotions.get("sadness", 0)
+            "anger": None,
+            "disgust": None,
+            "fear": None,
+            "joy": None,
+            "sadness": None,
+            "dominant_emotion": None
         }
 
-    except requests.exceptions.Timeout:
-        return {
-            "error": "Request timeout"
-        }
+    # Parse response safely
+    data = response.json()
 
-    except requests.exceptions.ConnectionError:
-        return {
-            "error": "Connection error"
-        }
+    emotions = data["emotionPredictions"][0]["emotion"]
 
-    except Exception as e:
-        return {
-            "error": str(e)
-        }
+    # Determine dominant emotion
+    dominant_emotion = max(emotions, key=emotions.get)
+
+    # Add required key
+    emotions["dominant_emotion"] = dominant_emotion
+
+    return emotions
