@@ -1,50 +1,64 @@
 from flask import Flask, render_template, request
 import requests
-import json
 
 app = Flask(__name__)
 
-# ====== IBM Watson NLU Credentials ======
-API_KEY = "API"
+# ===== IBM Watson NLU Credentials =====
+API_KEY = "xxx"
 URL = "xxx"
+
 
 def get_emotion(text):
     endpoint = f"{URL}/v1/analyze?version=2022-04-07"
 
-    headers = {
-        "Content-Type": "application/json"
-    }
-
-    auth = ("apikey", API_KEY)
-
-    data = {
+    payload = {
         "text": text,
         "features": {
             "emotion": {}
         }
     }
 
-    response = requests.post(endpoint, headers=headers, auth=auth, json=data)
-    
-    if response.status_code != 200:
-        return {"error": response.text}
+    try:
+        response = requests.post(
+            endpoint,
+            auth=("apikey", API_KEY),
+            headers={"Content-Type": "application/json"},
+            json=payload,
+            timeout=10
+        )
 
-    result = response.json()
+        data = response.json()
 
-    emotions = result["emotion"]["document"]["emotion"]
-    return emotions
+        # If API error
+        if response.status_code != 200:
+            return {"error": data}
+
+        # Extract emotions safely
+        emotions = (
+            data.get("emotion", {})
+                .get("document", {})
+                .get("emotion", {})
+        )
+
+        if not emotions:
+            return {"error": "No emotion detected. Try a longer sentence."}
+
+        return emotions
+
+    except Exception as e:
+        return {"error": str(e)}
 
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     emotions = None
-    user_text = ""
+    text = ""
 
     if request.method == "POST":
-        user_text = request.form["text"]
-        emotions = get_emotion(user_text)
+        text = request.form.get("text", "")
+        emotions = get_emotion(text)
 
-    return render_template("index.html", emotions=emotions, text=user_text)
+    return render_template("index.html", emotions=emotions, text=text)
 
 
 if __name__ == "__main__":
