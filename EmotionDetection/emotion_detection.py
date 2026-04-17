@@ -1,8 +1,7 @@
 import requests
 
-API_KEY = "xxx"
-URL = "xxx"
-
+API_KEY = "_6HRCzk4lEMhIs202t5MNSw7vygd_AKlgZ8YEklhQAka"
+URL = "https://api.au-syd.natural-language-understanding.watson.cloud.ibm.com/instances/967245b1-1bca-486d-98ad-8731701d954a"
 
 def emotion_detector(text_to_analyse):
 
